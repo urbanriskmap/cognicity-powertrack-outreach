@@ -1,0 +1,26 @@
+{
+  "name": "cognicity-reports-powertrack-outreach",
+  "version": "0.0.1",
+  "description": "Twitter outreach for Urban Risk Map using PowerTrack",
+  "main": "index.js",
+  "dependencies": {
+    "@babel/cli": "^7.1.2",
+    "dotenv": "^6.1.0",
+    "gnip": "^2.2.1",
+    "pg": "^7.6.1",
+    "winston": "^3.1.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.1.2",
+    "@babel/preset-env": "^7.1.0",
+    "eslint": "^5.8.0",
+    "eslint-config-google": "^0.11.0"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/babel src -d bin",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix src"
+  },
+  "author": "Tomas Holderness",
+  "license": "GPL-3.0"
+}
