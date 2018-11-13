@@ -59,6 +59,7 @@ client.connect(function(err, client, done){
 	}
 });
 
+
 const app = new Powertrack(config, logger);
 app.start();
 

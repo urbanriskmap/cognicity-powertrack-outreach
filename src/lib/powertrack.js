@@ -1,7 +1,8 @@
 // Core PowerTrack module
-
 import gnip from 'gnip';
-import {start} from 'repl';
+
+// One big hack.
+const database = require('./database');
 
 /**
  * Class for initializing and connecting to PowerTrack stream
@@ -19,38 +20,39 @@ export default class Powertrack {
     this.logger = logger;
   }
 
-  // TODO - do we need a filter?
-  // filter();
-
-  // Start
   start() {
+
+    // Setup "global" variables
     // Gnip stream
     let stream;
+    let logger = this.logger;
     // Timeout reconnection delay, used for exponential backoff
     const _initialStreamReconnectTimeout = 1000;
     let streamReconnectTimeout = _initialStreamReconnectTimeout;
     // Connect Gnip stream and setup event handlers
     let reconnectTimeoutHandle;
+    let disconnectionNotificationSent;
+    let config = this.config;
 
     // Attempt to reconnect the socket.
     // If we fail, wait an increasing amount of time before we try again.
     function reconnectSocket() {
       // Try and destroy the existing socket, if it existsconfirmReports
-      this.logger.warn( 'connectStream: Connection lost, destroying socket' );
+      logger.warn( 'connectStream: Connection lost, destroying socket' );
       if ( stream._req ) stream._req.destroy();
 
       // If our timeout is above the max threshold, cap it and send a notification tweet
-      if (streamReconnectTimeout >= this.config.gnip.maxReconnectTimeout) {
+      if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) {
         // TODO - logging
-        this.logger.warn('Cognicity Reports PowerTrack Gnip connection has been offline for ' +
-                    this.config.gnip.maxReconnectTimeout + ' seconds');
+        logger.warn('Cognicity Reports PowerTrack Gnip connection has been offline for ' +
+                    config.gnip.maxReconnectTimeout + ' seconds');
       } else {
         streamReconnectTimeout *= 2;
-        if (streamReconnectTimeout >= this.config.gnip.maxReconnectTimeout) streamReconnectTimeout = this.config.gnip.maxReconnectTimeout;
+        if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) streamReconnectTimeout = config.gnip.maxReconnectTimeout;
       }
 
       // Attempt to reconnect
-      this.logger.info( 'connectStream: Attempting to reconnect stream' );
+      logger.info( 'connectStream: Attempting to reconnect stream' );
       this._getlastTweetIDFromDatabase(function() {
         stream.start();
       });
@@ -64,107 +66,100 @@ export default class Powertrack {
     // This function handles us getting called multiple times from different error handlers.
     function reconnectStream() {
       if (reconnectTimeoutHandle) clearTimeout(reconnectTimeoutHandle);
-      this.logger.info( 'connectStream: queing reconnect for ' + streamReconnectTimeout );
+      logger.info( 'connectStream: queing reconnect for ' + streamReconnectTimeout );
       reconnectTimeoutHandle = setTimeout( reconnectSocket, streamReconnectTimeout );
     }
 
     // Configure a Gnip stream with connection details
     stream = new gnip.Stream({
-      url: this.config.gnip.streamUrl,
-      user: this.config.gnip.username,
-      password: this.config.gnip.password,
-      backfillMinutes: this.config.gnip.backfillMinutes,
+      url: config.gnip.streamUrl,
+      user: config.gnip.username,
+      password: config.gnip.password,
+      backfillMinutes: config.gnip.backfillMinutes,
     });
 
     // When stream is connected, setup the stream timeout handler
     stream.on('ready', function() {
-      this.logger.info('connectStream: Stream ready!');
+      logger.info('connectStream: Stream ready!');
       streamReconnectTimeout = _initialStreamReconnectTimeout;
       disconnectionNotificationSent = false;
       // Augment Gnip.Stream._req (Socket) object with a timeout handler.
       // We are accessing a private member here so updates to gnip could break this,
       // but gnip module does not expose the socket or methods to handle timeout.
-      stream._req.setTimeout( this.config.gnip.streamTimeout, function() {
-        this.logger.error('connectStream: Timeout error on Gnip stream');
+      stream._req.setTimeout( config.gnip.streamTimeout, function() {
+        logger.error('connectStream: Timeout error on Gnip stream');
         reconnectStream();
       });
     });
 
     // When we receive a tweetActivity from the Gnip stream this event handler will be called
     stream.on('tweet', function(tweetActivity) {
-      this.logger.debug('connectStream: stream.on(\'tweet\'): tweet = ' + JSON.stringify(tweetActivity));
+      logger.debug('connectStream: stream.on(\'tweet\'): tweet = ' + JSON.stringify(tweetActivity));
 
       // Catch errors here, otherwise error in filter method is caught as stream error
       try {
         if (tweetActivity.actor) {
           // This looks like a tweet in Gnip activity format, store ID, then check for filter
-          this._storeTweetID(tweetActivity, function() {
-            this._checkAgainstLastTweetID(tweetActivity, function(tweetActivity) {
+          database._storeTweetID(tweetActivity, function() {
+            database._checkAgainstLastTweetID(tweetActivity, function(tweetActivity) {
               //this.filter(tweetActivity);
               // TODO send message here.
-              this.logger.info('send message here...')
+              logger.info('send message here...')
             });
           });
         } else {
           // This looks like a system message
-          this.logger.info('connectStream: Received system message: ' + JSON.stringify(tweetActivity));
+          logger.info('connectStream: Received system message: ' + JSON.stringify(tweetActivity));
         }
       } catch (err) {
-        this.logger.error('connectStream: stream.on(\'tweet\'): Error on handler:' + err.message + ', ' + err.stack);
+        logger.error('connectStream: stream.on(\'tweet\'): Error on handler:' + err.message + ', ' + err.stack);
       }
     });
 
     // Handle an error from the stream
     stream.on('error', function(err) {
-      this.logger.error('connectStream: Error connecting stream:' + err);
+      logger.error('connectStream: Error connecting stream:' + err);
       reconnectStream();
     });
 
     // TODO Do we need to catch the 'end' event?
     // Handle a socket 'end' event from the stream
     stream.on('end', function() {
-      this.logger.error('connectStream: Stream ended');
+      logger.error('connectStream: Stream ended');
       reconnectStream();
     });
 
     // Construct a Gnip rules connection
     const rules = new gnip.Rules({
-      url: this.config.gnip.rulesUrl,
-      user: this.config.gnip.username,
-      password: this.config.gnip.password,
+      url: config.gnip.rulesUrl,
+      user: config.gnip.username,
+      password: config.gnip.password,
     });
     // Create rules programatically from config
     // Use key of rule entry as the tag, and value as the rule string
     const newRules = [];
-    for (const tag in this.config.gnip.rules) {
-      if ( this.config.gnip.rules.hasOwnProperty(tag) ) {
+    for (const tag in config.gnip.rules) {
+      if ( config.gnip.rules.hasOwnProperty(tag) ) {
         newRules.push({
           tag: tag,
-          value: this.config.gnip.rules[tag],
+          value: config.gnip.rules[tag],
         });
       }
     }
-    this.logger.debug('connectStream: Rules = ' + JSON.stringify(newRules));
+    logger.debug('connectStream: Rules = ' + JSON.stringify(newRules));
 
     function cb(err, result){
       if (err) throw err;
-      this.logger.info('connectStream: Connecting stream...');
+      //logger.info('connectStream: Connecting stream...');
       // If we pushed the rules successfully, get last seen report, and then try and connect the stream
-      this._getlastTweetIDFromDatabase(function() {
-        stream.start();
-      });
+      //_getlastTweetIDFromDatabase(function() {
+      stream.start();
+      //});
     }
 
     // Push the parsed rules to Gnip
-    this.logger.info('connectStream: Updating rules...');
+    logger.info('connectStream: Updating rules...');
     // Bypass the cache, remove all the rules and send them all again
     rules.live.update(newRules, cb);
   }
-
-  // Module exports
-  // How should this be operated? -> Tooling for deployment
-  // EB?
-  //
-  // Blacklist, not us...
-  // Add button
 }
