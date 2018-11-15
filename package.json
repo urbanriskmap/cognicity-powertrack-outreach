@@ -8,6 +8,7 @@
     "dotenv": "^6.1.0",
     "gnip": "^2.2.1",
     "pg": "^7.6.1",
+    "twitter": "^1.7.1",
     "winston": "^3.1.0"
   },
   "devDependencies": {

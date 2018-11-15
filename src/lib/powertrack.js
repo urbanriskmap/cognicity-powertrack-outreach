@@ -1,8 +1,11 @@
 // Core PowerTrack module
 import gnip from 'gnip';
 
-// One big hack.
-const database = require('./database');
+import {
+  _getlastTweetIDFromDatabase,
+  _checkAgainstLastTweetID,
+  _storeTweetID,
+} from './database';
 
 /**
  * Class for initializing and connecting to PowerTrack stream
@@ -20,40 +23,46 @@ export default class Powertrack {
     this.logger = logger;
   }
 
+  /**
+   * TODO add jsdoc
+   */
   start() {
-
     // Setup "global" variables
-    // Gnip stream
-    let stream;
-    let logger = this.logger;
+    const logger = this.logger;
     // Timeout reconnection delay, used for exponential backoff
     const _initialStreamReconnectTimeout = 1000;
     let streamReconnectTimeout = _initialStreamReconnectTimeout;
     // Connect Gnip stream and setup event handlers
     let reconnectTimeoutHandle;
     let disconnectionNotificationSent;
-    let config = this.config;
+    const config = this.config;
 
-    // Attempt to reconnect the socket.
-    // If we fail, wait an increasing amount of time before we try again.
+    /**
+     * TODO add jsdoc
+     * Attempt to reconnect the socket.
+     * If we fail, wait an increasing amount of time before we try again.
+     */
     function reconnectSocket() {
       // Try and destroy the existing socket, if it existsconfirmReports
       logger.warn( 'connectStream: Connection lost, destroying socket' );
       if ( stream._req ) stream._req.destroy();
 
-      // If our timeout is above the max threshold, cap it and send a notification tweet
+      // If our timeout is above max threshold, cap it & send notification tweet
       if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) {
         // TODO - logging
-        logger.warn('Cognicity Reports PowerTrack Gnip connection has been offline for ' +
-                    config.gnip.maxReconnectTimeout + ' seconds');
+        logger.warn(
+            'Cognicity Reports PowerTrack Gnip connection has been offline for '
+            + config.gnip.maxReconnectTimeout + ' seconds');
       } else {
         streamReconnectTimeout *= 2;
-        if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) streamReconnectTimeout = config.gnip.maxReconnectTimeout;
+        if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) {
+          streamReconnectTimeout = config.gnip.maxReconnectTimeout;
+        }
       }
 
       // Attempt to reconnect
       logger.info( 'connectStream: Attempting to reconnect stream' );
-      this._getlastTweetIDFromDatabase(function() {
+      _getlastTweetIDFromDatabase(function() {
         stream.start();
       });
     }
@@ -62,16 +71,23 @@ export default class Powertrack {
     // Is this normal? Can we only use one event? Or is it possible to get only
     // one of those handlers called under some error situations.
 
-    // Attempt to reconnect the Gnip stream.
-    // This function handles us getting called multiple times from different error handlers.
+    /**
+     * Attempt to reconnect the Gnip stream.
+     * This function handles us getting called multiple
+     * times from different error handlers.
+     */
     function reconnectStream() {
       if (reconnectTimeoutHandle) clearTimeout(reconnectTimeoutHandle);
-      logger.info( 'connectStream: queing reconnect for ' + streamReconnectTimeout );
-      reconnectTimeoutHandle = setTimeout( reconnectSocket, streamReconnectTimeout );
+      logger.info(
+          'connectStream: queing reconnect for ' + streamReconnectTimeout
+      );
+      reconnectTimeoutHandle = setTimeout(
+          reconnectSocket, streamReconnectTimeout
+      );
     }
 
     // Configure a Gnip stream with connection details
-    stream = new gnip.Stream({
+    const stream = new gnip.Stream({
       url: config.gnip.streamUrl,
       user: config.gnip.username,
       password: config.gnip.password,
@@ -84,35 +100,48 @@ export default class Powertrack {
       streamReconnectTimeout = _initialStreamReconnectTimeout;
       disconnectionNotificationSent = false;
       // Augment Gnip.Stream._req (Socket) object with a timeout handler.
-      // We are accessing a private member here so updates to gnip could break this,
-      // but gnip module does not expose the socket or methods to handle timeout.
+      // We are accessing a private member here so updates to gnip could
+      // break this, but gnip module does not expose the socket or
+      // methods to handle timeout.
       stream._req.setTimeout( config.gnip.streamTimeout, function() {
         logger.error('connectStream: Timeout error on Gnip stream');
         reconnectStream();
       });
     });
 
-    // When we receive a tweetActivity from the Gnip stream this event handler will be called
+    // When we receive a tweetActivity from the Gnip stream this
+    // event handler will be called
     stream.on('tweet', function(tweetActivity) {
-      logger.debug('connectStream: stream.on(\'tweet\'): tweet = ' + JSON.stringify(tweetActivity));
+      logger.debug(
+          'connectStream: stream.on(\'tweet\'): tweet = '
+          + JSON.stringify(tweetActivity)
+      );
 
-      // Catch errors here, otherwise error in filter method is caught as stream error
+      // Catch errors here, otherwise error in filter method is
+      // caught as stream error
       try {
         if (tweetActivity.actor) {
-          // This looks like a tweet in Gnip activity format, store ID, then check for filter
-          database._storeTweetID(tweetActivity, function() {
-            database._checkAgainstLastTweetID(tweetActivity, function(tweetActivity) {
-              //this.filter(tweetActivity);
+          // This looks like a tweet in Gnip activity format, store ID,
+          // then check for filter
+          _storeTweetID(tweetActivity, function() {
+            _checkAgainstLastTweetID(tweetActivity, function(tweetActivity) {
+              // this.filter(tweetActivity);
               // TODO send message here.
-              logger.info('send message here...')
+              logger.info('send message here...');
             });
           });
         } else {
           // This looks like a system message
-          logger.info('connectStream: Received system message: ' + JSON.stringify(tweetActivity));
+          logger.info(
+              'connectStream: Received system message: '
+              + JSON.stringify(tweetActivity)
+          );
         }
       } catch (err) {
-        logger.error('connectStream: stream.on(\'tweet\'): Error on handler:' + err.message + ', ' + err.stack);
+        logger.error(
+            'connectStream: stream.on(\'tweet\'): Error on handler:'
+            + err.message + ', ' + err.stack
+        );
       }
     });
 
@@ -148,13 +177,17 @@ export default class Powertrack {
     }
     logger.debug('connectStream: Rules = ' + JSON.stringify(newRules));
 
-    function cb(err, result){
+    /**
+     * TODO add jsdoc
+     */
+    function cb(err, result) {
       if (err) throw err;
-      //logger.info('connectStream: Connecting stream...');
-      // If we pushed the rules successfully, get last seen report, and then try and connect the stream
-      //_getlastTweetIDFromDatabase(function() {
+      // logger.info('connectStream: Connecting stream...');
+      // If we pushed the rules successfully, get last seen report,
+      // and then try and connect the stream
+      // _getlastTweetIDFromDatabase(function() {
       stream.start();
-      //});
+      // });
     }
 
     // Push the parsed rules to Gnip
