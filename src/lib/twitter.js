@@ -67,14 +67,21 @@ export class TwitterModule {
    * @return {string} username
    */
   parseUsername(tweet) {
-    return tweet.user.name.split(':')[2];
+    if (
+      tweet.actor.hasOwnProperty('preferredUsername')
+      && tweet.actor.preferredUsername
+    ) {
+      return tweet.actor.preferredUsername;
+    }
+
+    return null;
   }
 
   /**
    * @param {GnipTweetActivity} tweet
    * @return {boolean}
    */
-  isTweetFromUs(tweet) {
+  isTweetFromUs(tweet) { // TODO Check by sending tweet with screen_name
     const screenName = tweet.user.screen_name;
     return (screenName === this.config.screen_name);
   }
@@ -98,7 +105,9 @@ export class TwitterModule {
       this.logger.info(this.messages.usernameInBlacklist);
     } else {
       // Tweet is not to ourself, attempt to send
-      message = '@' + username + ' ' + message;
+      if (username) {
+        message = '@' + username + ' ' + message;
+      }
 
       if (this.config.addTimestamp) {
         params = {
