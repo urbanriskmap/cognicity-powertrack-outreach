@@ -1,4 +1,4 @@
-import {Twitter} from 'twitter';
+import Twitter from 'twitter';
 
 /**
  * @class TwitterModule
@@ -86,6 +86,8 @@ export class TwitterModule {
    * @param {function} success Callback function called on success
    */
   sendReplyTweet(tweet, lang, success) {
+    // this.logger.info('_sendReplyTweet: Attempting send reply');
+
     let params;
     let message = this.config.dialogue[lang];
     const username = this.parseUsername(tweet);

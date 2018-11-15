@@ -118,9 +118,6 @@ export default class Powertrack {
           + JSON.stringify(tweetActivity)
       );
 
-      // Initiate twitter module
-      const twitter = new TwitterModule(config.twitter, logger);
-
       // Catch errors here, otherwise error in filter method is
       // caught as stream error
       try {
@@ -130,6 +127,9 @@ export default class Powertrack {
           _storeTweetID(tweetActivity, () => {
             _checkAgainstLastTweetID(tweetActivity, (tweetActivity) => {
               // this.filter(tweetActivity);
+
+              // Initiate twitter module
+              const twitter = new TwitterModule(config.twitter, logger);
 
               // TODO: send message here.
               twitter.sendReplyTweet(

@@ -107,6 +107,10 @@ config.gnip.rules = {
   'bdg': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[107.369 -6.97964 107.68291 -6.668] OR bounding_box:[107.68921 -6.97964 107.931 -6.668] OR bounding_box:[107.369 -7.165 107.68921 -6.97964] OR bounding_box:[107.68291 -7.165 107.931 -6.97962] OR bio_location:bandung OR place:bandung)',
   'sby': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[112.3975 -7.32570 112.71169 -7.0143] OR bounding_box:[112.71169 -7.32570 113.0318 -7.0143] OR bounding_box:[112.3975 -7.5499 112.71169 -7.32570] OR bounding_box:[112.71169 -7.5499 113.0318 -7.32570] OR bio_location:surabaya OR place:surabaya)',
 };
+// config.gnip.rules = {
+//   'addressed': '(contains:flood) @adityasbarve',
+//   'chn': '(contains:chennai) (bio_location:chennai OR place:chennai)',
+// };
 
 config.gnip.maxReconnectTimeout = 1000 * 60 * 5; // In milliseconds; 5 minutes for max reconnection timeout - will mean ~10 minutes from first disconnection
 config.gnip.backfillMinutes = 5; // backfill in minutes on reconnect to the stream
@@ -123,7 +127,7 @@ config.twitter.access_token_key = process.env.TWITTER_ACCESS_TOKEN_KEY; // Take 
 config.twitter.access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET; // Take from the twitter dev admin interface
 
 // Twitter parameters
-config.twitter.send_enabled = true; // Enable sending of tweets?
+config.twitter.send_enabled = false; // Enable sending of tweets?
 config.twitter.url_length = 0; // URLs no longer count as part of tweet limits so this should be 0
 config.twitter.screen_name = 'cognicityTwitterPowertrack';
 

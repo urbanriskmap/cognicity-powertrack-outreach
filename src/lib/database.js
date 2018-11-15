@@ -1,6 +1,6 @@
 import {Pool} from 'pg';
 
-const connectionString = 'postgresql://postgres:postgres@127.0.0.1:5433/cognicity';
+const connectionString = 'postgresql://postgres:postgres@127.0.0.1:5432/cognicity';
 
 const pool = new Pool({
   connectionString: connectionString,
