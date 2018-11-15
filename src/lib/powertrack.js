@@ -6,6 +6,7 @@ import {
   _checkAgainstLastTweetID,
   _storeTweetID,
 } from './database';
+import {TwitterModule} from './twitter';
 
 /**
  * Class for initializing and connecting to PowerTrack stream
@@ -42,7 +43,7 @@ export default class Powertrack {
      * Attempt to reconnect the socket.
      * If we fail, wait an increasing amount of time before we try again.
      */
-    function reconnectSocket() {
+    const reconnectSocket = () => {
       // Try and destroy the existing socket, if it existsconfirmReports
       logger.warn( 'connectStream: Connection lost, destroying socket' );
       if ( stream._req ) stream._req.destroy();
@@ -62,10 +63,10 @@ export default class Powertrack {
 
       // Attempt to reconnect
       logger.info( 'connectStream: Attempting to reconnect stream' );
-      _getlastTweetIDFromDatabase(function() {
+      _getlastTweetIDFromDatabase(() => {
         stream.start();
       });
-    }
+    };
 
     // TODO We get called twice for disconnect, once from error once from end
     // Is this normal? Can we only use one event? Or is it possible to get only
@@ -76,7 +77,7 @@ export default class Powertrack {
      * This function handles us getting called multiple
      * times from different error handlers.
      */
-    function reconnectStream() {
+    const reconnectStream = () => {
       if (reconnectTimeoutHandle) clearTimeout(reconnectTimeoutHandle);
       logger.info(
           'connectStream: queing reconnect for ' + streamReconnectTimeout
@@ -84,7 +85,7 @@ export default class Powertrack {
       reconnectTimeoutHandle = setTimeout(
           reconnectSocket, streamReconnectTimeout
       );
-    }
+    };
 
     // Configure a Gnip stream with connection details
     const stream = new gnip.Stream({
@@ -95,7 +96,7 @@ export default class Powertrack {
     });
 
     // When stream is connected, setup the stream timeout handler
-    stream.on('ready', function() {
+    stream.on('ready', () => {
       logger.info('connectStream: Stream ready!');
       streamReconnectTimeout = _initialStreamReconnectTimeout;
       disconnectionNotificationSent = false;
@@ -103,7 +104,7 @@ export default class Powertrack {
       // We are accessing a private member here so updates to gnip could
       // break this, but gnip module does not expose the socket or
       // methods to handle timeout.
-      stream._req.setTimeout( config.gnip.streamTimeout, function() {
+      stream._req.setTimeout( config.gnip.streamTimeout, () => {
         logger.error('connectStream: Timeout error on Gnip stream');
         reconnectStream();
       });
@@ -111,11 +112,14 @@ export default class Powertrack {
 
     // When we receive a tweetActivity from the Gnip stream this
     // event handler will be called
-    stream.on('tweet', function(tweetActivity) {
+    stream.on('tweet', (tweetActivity) => {
       logger.debug(
           'connectStream: stream.on(\'tweet\'): tweet = '
           + JSON.stringify(tweetActivity)
       );
+
+      // Initiate twitter module
+      const twitter = new TwitterModule(config.twitter, logger);
 
       // Catch errors here, otherwise error in filter method is
       // caught as stream error
@@ -123,11 +127,16 @@ export default class Powertrack {
         if (tweetActivity.actor) {
           // This looks like a tweet in Gnip activity format, store ID,
           // then check for filter
-          _storeTweetID(tweetActivity, function() {
-            _checkAgainstLastTweetID(tweetActivity, function(tweetActivity) {
+          _storeTweetID(tweetActivity, () => {
+            _checkAgainstLastTweetID(tweetActivity, (tweetActivity) => {
               // this.filter(tweetActivity);
-              // TODO send message here.
-              logger.info('send message here...');
+
+              // TODO: send message here.
+              twitter.sendReplyTweet(
+                  tweetActivity,
+                  'en',
+                  // need callback?
+              );
             });
           });
         } else {
@@ -146,14 +155,14 @@ export default class Powertrack {
     });
 
     // Handle an error from the stream
-    stream.on('error', function(err) {
+    stream.on('error', (err) => {
       logger.error('connectStream: Error connecting stream:' + err);
       reconnectStream();
     });
 
     // TODO Do we need to catch the 'end' event?
     // Handle a socket 'end' event from the stream
-    stream.on('end', function() {
+    stream.on('end', () => {
       logger.error('connectStream: Stream ended');
       reconnectStream();
     });
@@ -178,17 +187,18 @@ export default class Powertrack {
     logger.debug('connectStream: Rules = ' + JSON.stringify(newRules));
 
     /**
-     * TODO add jsdoc
+     * @param {object} err
+     * @param {object} result
      */
-    function cb(err, result) {
+    const cb = (err, result) => {
       if (err) throw err;
       // logger.info('connectStream: Connecting stream...');
       // If we pushed the rules successfully, get last seen report,
       // and then try and connect the stream
-      // _getlastTweetIDFromDatabase(function() {
+      // _getlastTweetIDFromDatabase(() => {
       stream.start();
       // });
-    }
+    };
 
     // Push the parsed rules to Gnip
     logger.info('connectStream: Updating rules...');
