@@ -82,8 +82,9 @@ export class TwitterModule {
    * @return {boolean}
    */
   isTweetFromUs(tweet) { // TODO Check by sending tweet with screen_name
-    const screenName = tweet.user.screen_name;
-    return (screenName === this.config.screen_name);
+    // const screenName = tweet.user.screen_name;
+    // return (screenName === this.config.screen_name);
+    return false;
   }
 
   /**
@@ -93,10 +94,19 @@ export class TwitterModule {
    * @param {function} success Callback function called on success
    */
   sendReplyTweet(tweet, lang, success) {
-    // this.logger.info('_sendReplyTweet: Attempting send reply');
+    this.logger.info('_sendReplyTweet: Attempting send reply...');
 
     let params;
-    let message = this.config.dialogue[lang];
+    let message;
+    // TODO: trye parsing language from tweet
+    if (lang) {
+      message = this.config.dialogue.requests.card[lang];
+    } else {
+      message = this.config.dialogue.requests.card[this.defaultLanguage];
+    }
+
+    message += ' ' + this.config.bot_deep_link;
+
     const username = this.parseUsername(tweet);
     const tweetId = this.parseTweetId(tweet);
 
@@ -118,6 +128,10 @@ export class TwitterModule {
         };
 
         if (this.config.send_enabled) {
+          this.logger.info('_sendReplyTweet: Sending message '
+            + JSON.stringify(params) + ' to username: @' + username
+          );
+
           // Make a POST call to send a tweet to the user
           this.client.post(
               'statuses/update',

@@ -101,16 +101,25 @@ config.gnip.password = process.env.GNIP_PASSWORD; // Gnip password
 config.gnip.streamUrl = process.env.GNIP_STREAM_URL; // Gnip stream URL, take from the Gnip admin interface.
 config.gnip.rulesUrl = process.env.GNIP_RULES_URL; // Gnip rules URL, take from the Gnip admin interface.
 // Gnip rules, enter as an object where the key is the rule name and the value is the rule as a string
-config.gnip.rules = {
-  'addressed': '(contains:flood OR contains:banjir OR contains:jakartabanjir) @petabencana OR (contains:flood OR contains:banjir OR contains:jakartabanjir) @petajkt',
-  'jbd': '( contains:jakarta ) ( bounding_box:[106.471 -6.19140 106.79381 -5.880] OR bounding_box:[106.79381 -6.19140 107.10880 -5.880] OR bounding_box:[107.10880 -6.19140 107.175 -5.880] OR bounding_box:[106.471 -6.50213 106.79381 -6.19140] OR bounding_box:[106.79381 -6.50213 107.10880 -6.19140] OR bounding_box:[107.10880 -6.50213 107.175 -6.19140] OR bounding_box:[106.471 -6.733 106.79381 -6.50213] OR bounding_box:[106.79381 -6.733 107.10880 -6.50213] OR bounding_box:[107.10880 -6.733 107.175 -6.50213] OR bio_location:jakarta OR place:jakarta)',
-  'bdg': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[107.369 -6.97964 107.68291 -6.668] OR bounding_box:[107.68921 -6.97964 107.931 -6.668] OR bounding_box:[107.369 -7.165 107.68921 -6.97964] OR bounding_box:[107.68291 -7.165 107.931 -6.97962] OR bio_location:bandung OR place:bandung)',
-  'sby': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[112.3975 -7.32570 112.71169 -7.0143] OR bounding_box:[112.71169 -7.32570 113.0318 -7.0143] OR bounding_box:[112.3975 -7.5499 112.71169 -7.32570] OR bounding_box:[112.71169 -7.5499 113.0318 -7.32570] OR bio_location:surabaya OR place:surabaya)',
-};
 // config.gnip.rules = {
-//   'addressed': '(contains:flood) @adityasbarve',
-//   'chn': '(contains:chennai) (bio_location:chennai OR place:chennai)',
+//   'addressed': '(contains:flood OR contains:banjir OR contains:jakartabanjir) @petabencana OR (contains:flood OR contains:banjir OR contains:jakartabanjir) @petajkt',
+//   'jbd': '( contains:jakarta ) ( bounding_box:[106.471 -6.19140 106.79381 -5.880] OR bounding_box:[106.79381 -6.19140 107.10880 -5.880] OR bounding_box:[107.10880 -6.19140 107.175 -5.880] OR bounding_box:[106.471 -6.50213 106.79381 -6.19140] OR bounding_box:[106.79381 -6.50213 107.10880 -6.19140] OR bounding_box:[107.10880 -6.50213 107.175 -6.19140] OR bounding_box:[106.471 -6.733 106.79381 -6.50213] OR bounding_box:[106.79381 -6.733 107.10880 -6.50213] OR bounding_box:[107.10880 -6.733 107.175 -6.50213] OR bio_location:jakarta OR place:jakarta)',
+//   'bdg': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[107.369 -6.97964 107.68291 -6.668] OR bounding_box:[107.68921 -6.97964 107.931 -6.668] OR bounding_box:[107.369 -7.165 107.68921 -6.97964] OR bounding_box:[107.68291 -7.165 107.931 -6.97962] OR bio_location:bandung OR place:bandung)',
+//   'sby': '( contains:flood OR contains:banjir OR contains:jakartabanjir ) ( bounding_box:[112.3975 -7.32570 112.71169 -7.0143] OR bounding_box:[112.71169 -7.32570 113.0318 -7.0143] OR bounding_box:[112.3975 -7.5499 112.71169 -7.32570] OR bounding_box:[112.71169 -7.5499 113.0318 -7.32570] OR bio_location:surabaya OR place:surabaya)',
 // };
+
+// const hashtags = '(#chennairains #chennaifloods)';
+// const keywords = '(rain OR rains OR contains:flood)';
+
+config.gnip.rules = {
+  'test': 'thisIsARiskLabTest @RisklabTest -is:retweet',
+  // 'addressed': '(' + hashtags + ' OR ' + keywords + ')'
+  // + ' @RisklabTest -is:retweet',
+  // 'chn': '(' + hashtags + ' OR ' + keywords + ')' + ' -is:retweet'
+  // + ' (contains:chennai OR bio_location:chennai OR place:chennai'
+  // + ' OR bounding_box:[80.0900 12.8400 80.3800 13.0517]'
+  // + ' OR bounding_box:[80.0900 13.0517 80.3800 13.2555])',
+};
 
 config.gnip.maxReconnectTimeout = 1000 * 60 * 5; // In milliseconds; 5 minutes for max reconnection timeout - will mean ~10 minutes from first disconnection
 config.gnip.backfillMinutes = 5; // backfill in minutes on reconnect to the stream
@@ -120,14 +129,14 @@ config.twitter = {};
 // TODO grasp & re-tweet verification see #3
 config.twitter.usernameVerify = ''; // Twitter username (without @) authorised to verify reports via retweet functionality
 // TODO MOVE TO ENV variable
-config.twitter.usernameReplyBlacklist = 'petabencana,BPBDJakarta,riskmapindia,riskmapus'; // Twitter usernames (without @, comma separated for multiples) which will never be sent to in response to tweet processing
+config.twitter.usernameReplyBlacklist = 'petabencana,BPBDJakarta,riskmapindia,riskmapus,mayankojha'; // Twitter usernames (without @, comma separated for multiples) which will never be sent to in response to tweet processing
 config.twitter.consumer_key = process.env.TWITTER_CONSUMER_KEY; // Take from the twitter dev admin interface
 config.twitter.consumer_secret = process.env.TWITTER_CONSUMER_SECRET; // Take from the twitter dev admin interface
 config.twitter.access_token_key = process.env.TWITTER_ACCESS_TOKEN_KEY; // Take from the twitter dev admin interface
 config.twitter.access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET; // Take from the twitter dev admin interface
 
 // Twitter parameters
-config.twitter.send_enabled = false; // Enable sending of tweets?
+config.twitter.send_enabled = true; // Enable sending of tweets?
 config.twitter.url_length = 0; // URLs no longer count as part of tweet limits so this should be 0
 config.twitter.screen_name = 'cognicityTwitterPowertrack';
 
@@ -152,7 +161,7 @@ config.twitter.dialogue.requests.card.id = 'Hai! Gunakan link ini untuk menginpu
 config.twitter.dialogue.requests.card.in = 'Hi! Report flood using this link. Thanks!';
 
 // Append a timestamp to each sent tweet except response to confirmed reports with unique urls
-config.twitter.addTimestamp = false;
+config.twitter.addTimestamp = true;
 
 // TODO - ADD MEDIA SUPPORT FOR INDIA
 // Add a specified twitter media to replies
@@ -162,6 +171,9 @@ config.twitter.media_id.id = process.env.TWITTER_MEDIA_ID_ID;
 config.twitter.media_id.en = process.env.TWITTER_MEDIA_ID_EN;
 // Name of network passed when a card is requested
 config.twitter.network_name = 'twitter';
+
+// TODO: add jsdoc
+config.twitter.bot_deep_link = process.env.TWITTER_DEEP_LINK;
 
 // Cognicity Card Server Details
 config.card_server = {};

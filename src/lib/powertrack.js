@@ -114,19 +114,23 @@ export default class Powertrack {
     // event handler will be called
     stream.on('tweet', (tweetActivity) => {
       logger.debug(
-          'connectStream: stream.on(\'tweet\'): tweet = '
-          + JSON.stringify(tweetActivity)
+          // 'connectStream: stream.on(\'tweet\'): tweet = '
+          // + JSON.stringify(tweetActivity)
+          JSON.stringify(tweetActivity)
       );
 
       // Catch errors here, otherwise error in filter method is
       // caught as stream error
       try {
         if (tweetActivity.actor) {
-          // This looks like a tweet in Gnip activity format, store ID,
-          // then check for filter
-          _storeTweetID(tweetActivity, () => {
-            _checkAgainstLastTweetID(tweetActivity, (tweetActivity) => {
-              // this.filter(tweetActivity);
+          // This looks like a tweet in Gnip activity format
+          // First: compare tweet id against last stored tweet id
+          _checkAgainstLastTweetID(tweetActivity, () => {
+            logger.info('_checkLastTweetId: passed');
+
+            // Then: store latest tweet id
+            _storeTweetID(tweetActivity, (tweetActivity) => {
+              logger.info('_storeNewTweetId: stored');
 
               // Initiate twitter module
               const twitter = new TwitterModule(config.twitter, logger);
@@ -191,7 +195,10 @@ export default class Powertrack {
      * @param {object} result
      */
     const cb = (err, result) => {
-      if (err) throw err;
+      if (err) {
+        logger.error(JSON.stringify(err));
+        throw err;
+      }
       // logger.info('connectStream: Connecting stream...');
       // If we pushed the rules successfully, get last seen report,
       // and then try and connect the stream
