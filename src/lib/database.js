@@ -31,9 +31,9 @@ exports._getlastTweetIDFromDatabase = (callback) => {
 
 exports._checkAgainstLastTweetID = (tweetActivity, callback) => {
   const tweetId = exports._parseTweetIdFromActivity(tweetActivity);
-  const lastTweetID = exports._getlastTweetIDFromDatabase((err, res) => {
+  exports._getlastTweetIDFromDatabase((err, res) => {
     if (tweetId > res) {
-      callback(tweetActivity);
+      callback();
     }
   });
 };
@@ -43,10 +43,7 @@ exports._storeTweetID = (tweetActivity, callback) => {
 
   pool.query('UPDATE twitter.seen_tweet_id SET id=$1;', [tweetId],
       (err, result) => {
-        // self.logger.verbose(
-        //    'Recorded tweet ' + tweetId + ' as having been seen.'
-        // );
-        callback();
+        callback(tweetActivity);
       }
   );
 };
