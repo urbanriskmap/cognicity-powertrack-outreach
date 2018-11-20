@@ -38,6 +38,7 @@ if (process.env.NODE_ENV !== 'production') {
 // last log message. So we wait a short time before exiting.
 /**
  * TODO add jsdoc
+ * @param {number} exitStatus
  */
 function exitWithStatus(exitStatus) {
   logger.info( 'Exiting with status ' + exitStatus );

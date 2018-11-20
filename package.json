@@ -2,9 +2,18 @@
   "name": "cognicity-reports-powertrack-outreach",
   "version": "0.0.1",
   "description": "Twitter outreach for Urban Risk Map using PowerTrack",
+  "repository": "https://github.com/urbanriskmap/cognicity-powertrack-outreach",
   "main": "index.js",
+  "author": "Tomas Holderness, Mayank Ojha, MIT Urban Risk Lab",
+  "license": "GPL-3.0",
+  "scripts": {
+    "start": "export dep=test && npm run build && node bin/index.js",
+    "build": "npm run process-dep && babel src -d bin",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint --fix src",
+    "process-dep": "babel tasks/**/*.js tasks/gulpfile.js -o tasks/index.js && gulp -f ./tasks --dep $dep"
+  },
   "dependencies": {
-    "@babel/cli": "^7.1.2",
     "dotenv": "^6.1.0",
     "gnip": "^2.2.1",
     "pg": "^7.6.1",
@@ -12,17 +21,16 @@
     "winston": "^3.1.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/preset-env": "^7.1.0",
-    "eslint": "^5.8.0",
-    "eslint-config-google": "^0.11.0"
-  },
-  "scripts": {
-    "start": "npm run build && node bin/index.js",
-    "build": "./node_modules/.bin/babel src -d bin",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --fix src"
-  },
-  "author": "Tomas Holderness",
-  "license": "GPL-3.0"
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "eslint": "^5.9.0",
+    "eslint-config-google": "^0.11.0",
+    "gulp": "^4.0.0",
+    "gulp-change": "^1.0.0",
+    "gulp-changed-in-place": "^2.3.0",
+    "gulp-rename": "^1.4.0",
+    "gulp-replace": "^1.0.0",
+    "minimist": "^1.2.0"
+  }
 }

@@ -100,9 +100,9 @@ export class TwitterModule {
     let message;
     // TODO: trye parsing language from tweet
     if (lang) {
-      message = this.config.dialogue.requests.card[lang];
+      message = this.config.dialogue[lang].redirect;
     } else {
-      message = this.config.dialogue.requests.card[this.defaultLanguage];
+      message = this.config.dialogue[this.defaultLanguage].redirect;
     }
 
     message += ' ' + this.config.bot_deep_link;

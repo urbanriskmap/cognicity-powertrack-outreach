@@ -1,8 +1,8 @@
-'use strict';
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-// config.js
-// configuration file for cognicity-reports-powertrack-outreach module
+import rules from './deployment/rules';
+import messages from './deployment/messages';
 
 // TODO update doc
 /**
@@ -68,115 +68,100 @@ require('dotenv').config();
  * @property {object} twitter.media_id
  * Media to be included with auto-reply tweets
  */
-const config = {};
 
-// Database and tables
-config.pg = {};
-config.pg.connection = process.env.PG_CONNECTION || 'postgresql://postgres:postgres@127.0.0.1:5432/cognicity';
-config.pg.table_invitees = 'twitter.invitees';
+export default {
+  // Database
+  pg: {
+    // Connection
+    connection: process.env.PG_CONNECTION
+        || 'postgresql://postgres:postgres@127.0.0.1:5432/cognicity',
 
-// Logging configuration
-config.logger = {};
+    // Tables
+    table_invitees: 'twitter.invitees',
+    table_last_seen: 'twitter.seen_tweet_id',
+    table_recipients: 'twitter.recipients',
+  },
 
-// What level to log at; info, verbose or debug are most useful.
-// Levels are (npm defaults): silly, debug, verbose, info, warn, error.
-config.logger.level = process.env.LOG_LEVEL;
+  // Logging configuration
+  logger: {
+    // What level to log at; info, verbose or debug are most useful.
+    // Levels are (npm defaults): silly, debug, verbose, info, warn, error.
+    level: process.env.LOG_LEVEL,
 
-// Max file size in bytes of each log file; default 100MB
-config.logger.maxFileSize = 1024 * 1024 * 100;
+    // Max file size in bytes of each log file; default 100MB
+    maxFileSize: 1024 * 1024 * 100,
 
-// Max number of log files kept
-config.logger.maxFiles = 10;
+    // Max number of log files kept
+    maxFiles: 10,
 
-// Set this to a full path to a directory - if not set,
-// logs will be written to the application directory.
-config.logger.logDirectory = process.env.LOG_DIR;
-config.logger.filename = 'cognicity-reports'; // base filename to use
+    // Set this to a full path to a directory - if not set,
+    // logs will be written to the application directory.
+    logDirectory: process.env.LOG_DIR,
 
-// Gnip Powertrack API
-config.gnip = {};
-config.gnip.stream = true; // Connect to stream and log reports
-config.gnip.streamTimeout = 1000 * 60; // In milliseconds. Must be >30s as a keep-alive is sent at least every 30s
-config.gnip.username = process.env.GNIP_USERNAME; // Gnip username
-config.gnip.password = process.env.GNIP_PASSWORD; // Gnip password
-config.gnip.streamUrl = process.env.GNIP_STREAM_URL; // Gnip stream URL, take from the Gnip admin interface.
-config.gnip.rulesUrl = process.env.GNIP_RULES_URL; // Gnip rules URL, take from the Gnip admin interface.
+    // base filename to use
+    filename: 'cognicity-reports',
+  },
 
-// const hashtags = '(#chennairains #chennaifloods)';
-// const keywords = '(rain OR rains OR contains:flood)';
+  // Gnip Powertrack API
+  gnip: {
+    // Connect to stream and log reports
+    stream: true,
+    // In milliseconds. Must be >30s as a keep-alive is sent at least every 30s
+    streamTimeout: 1000 * 60,
 
-// Gnip rules, enter as an object where the key is the rule name and the value is the rule as a string
-config.gnip.rules = {
-  'test': 'thisIsARiskLabTest @RisklabTest -is:retweet',
-  // 'addressed': '(' + hashtags + ' OR ' + keywords + ')'
-  // + ' @RisklabTest -is:retweet',
-  // 'chn': '(' + hashtags + ' OR ' + keywords + ')' + ' -is:retweet'
-  // + ' (contains:chennai OR bio_location:chennai OR place:chennai'
-  // + ' OR bounding_box:[80.0900 12.8400 80.3800 13.0517]'
-  // + ' OR bounding_box:[80.0900 13.0517 80.3800 13.2555])',
+    username: process.env.GNIP_USERNAME,
+    password: process.env.GNIP_PASSWORD,
+
+    // Gnip stream URL, take from the Gnip admin interface.
+    streamUrl: process.env.GNIP_STREAM_URL,
+    // Gnip rules URL, take from the Gnip admin interface.
+    rulesUrl: process.env.GNIP_RULES_URL,
+
+    // Gnip rules, will be processed at build time
+    // from deployments/${dep}/rules.json
+    rules: rules,
+
+    // In milliseconds; 5 minutes for max reconnection timeout
+    // - will mean ~10 minutes from first disconnection
+    maxReconnectTimeout: 1000 * 60 * 5,
+    // Backfill in minutes on reconnect to the stream
+    backfillMinutes: 5,
+  },
+
+  // Twitter app authentication details
+  twitter: {
+    // Take from the twitter dev admin interface
+    consumer_key: process.env.TWITTER_CONSUMER_KEY,
+    consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
+    access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
+    access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+
+    // TODO: Twitter username (without @) authorised to verify reports
+    // via retweet functionality
+    usernameVerify: '',
+
+    // Twitter usernames (without @, comma separated for multiples) which will
+    // never be sent to in response to tweet processing
+    usernameReplyBlacklist: process.env.USERNAME_BLACKLIST,
+
+    // Twitter parameters
+    // Enable sending of tweets?
+    send_enabled: true,
+    // URLs no longer count as part of tweet limits so this should be 0
+    url_length: 0,
+    // Append a timestamp to each sent tweet except response to
+    // confirmed reports with unique urls
+    addTimestamp: true,
+    // The default language code to use if we can't resolve one from the tweet
+    defaultLanguage: 'en',
+
+    // Dialogue translations, will be processed at build time
+    // from deployments/${dep}/messages.js
+    dialogue: messages,
+
+    // Add a specified twitter media to replies
+    media_id: process.env.TWITTER_MEDIA_ID,
+    // Deep link to the twitter chatbot for the specified deployment
+    bot_deep_link: process.env.TWITTER_DEEP_LINK,
+  },
 };
-
-config.gnip.maxReconnectTimeout = 1000 * 60 * 5; // In milliseconds; 5 minutes for max reconnection timeout - will mean ~10 minutes from first disconnection
-config.gnip.backfillMinutes = 5; // backfill in minutes on reconnect to the stream
-
-// Twitter app authentication details
-config.twitter = {};
-// TODO grasp & re-tweet verification see #3
-config.twitter.usernameVerify = ''; // Twitter username (without @) authorised to verify reports via retweet functionality
-// TODO MOVE TO ENV variable
-config.twitter.usernameReplyBlacklist = 'petabencana,BPBDJakarta,riskmapindia,riskmapus'; // Twitter usernames (without @, comma separated for multiples) which will never be sent to in response to tweet processing
-config.twitter.consumer_key = process.env.TWITTER_CONSUMER_KEY; // Take from the twitter dev admin interface
-config.twitter.consumer_secret = process.env.TWITTER_CONSUMER_SECRET; // Take from the twitter dev admin interface
-config.twitter.access_token_key = process.env.TWITTER_ACCESS_TOKEN_KEY; // Take from the twitter dev admin interface
-config.twitter.access_token_secret = process.env.TWITTER_ACCESS_TOKEN_SECRET; // Take from the twitter dev admin interface
-
-// Twitter parameters
-config.twitter.send_enabled = true; // Enable sending of tweets?
-config.twitter.url_length = 0; // URLs no longer count as part of tweet limits so this should be 0
-config.twitter.screen_name = 'cognicityTwitterPowertrack';
-
-// Twitter message texts
-// Note we use IN and ID because twitter and Gnip return different language codes for Indonesian
-// The messages should be no longer than 109 characters if timestamps are enabled, or 123 characters if timestamps are disabled
-// TODO - ADD SUPPORT FOR PREP CARD.
-config.twitter.defaultLanguage = 'en'; // The default language code to use if we can't resolve one from the tweet
-// Dialogue containers
-config.twitter.dialogue = {};
-config.twitter.dialogue.ahoy = {}; // Greet users
-config.twitter.dialogue.requests = {}; // Respond to user requests
-config.twitter.dialogue.requests.card = {}; // Flood report card responses
-// Dialogue translations
-// TODO use environments & deployments to get language codes
-// Import a separate locales file for messages
-config.twitter.dialogue.ahoy.en = 'Hello, I am Bencana Bot, reply with #flood to send me your flood report.';
-config.twitter.dialogue.ahoy.id = 'Halo, saya Bencana Bot. Untuk melaporkan banjir di sekitarmu, silakan balas dengan #banjir.';
-config.twitter.dialogue.ahoy.in = 'Hello, I am Bencana Bot, reply with #flood to send me your flood report.';
-config.twitter.dialogue.requests.card.en = 'Hi! Report flood using this link. Thanks!';
-config.twitter.dialogue.requests.card.id = 'Hai! Gunakan link ini untuk menginput lokasi banjir, keterangan, & foto.';
-config.twitter.dialogue.requests.card.in = 'Hi! Report flood using this link. Thanks!';
-
-// Append a timestamp to each sent tweet except response to confirmed reports with unique urls
-config.twitter.addTimestamp = true;
-
-// TODO - ADD MEDIA SUPPORT FOR INDIA
-// Add a specified twitter media to replies
-config.twitter.media_id = {};
-// See note above - GNIP uses 'in' to represent the Indonesian language.
-config.twitter.media_id.id = process.env.TWITTER_MEDIA_ID_ID;
-config.twitter.media_id.en = process.env.TWITTER_MEDIA_ID_EN;
-// Name of network passed when a card is requested
-config.twitter.network_name = 'twitter';
-
-// TODO: add jsdoc
-config.twitter.bot_deep_link = process.env.TWITTER_DEEP_LINK;
-
-// Cognicity Card Server Details
-config.card_server = {};
-config.card_server.address = process.env.CARD_SERVER_ADDRESS; // E.g. https://server.com/cards
-config.card_server.x_api_key = process.env.X_API_KEY; // AWS API Auth
-config.card_server.port = process.env.CARD_SERVER_PORT || 80;
-config.front_end = {};
-config.front_end.card_url_prefix = process.env.CARDS_PREFIX;
-
-// Export config object
-module.exports = config;

@@ -1,7 +1,7 @@
 // Core PowerTrack module
 import gnip from 'gnip';
 
-import {Database} from './database';
+import Database from './database';
 import {TwitterModule} from './twitter';
 
 /**

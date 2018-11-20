@@ -4,7 +4,7 @@ import {Pool} from 'pg';
  * Class for handling cognicity database connections
  * @class Database
  */
-export class Database {
+export default class {
   /**
    * @constructor
    * @param {object} config database configurations

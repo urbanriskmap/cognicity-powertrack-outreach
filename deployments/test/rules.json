@@ -1,0 +1,29 @@
+{
+  "allowRetweets": false,
+  "addressed": {
+    "_comment": "Usernames with '@' symbol",
+    "values": [
+      "@RisklabTest"
+    ]
+  },
+  "keywords": {
+    "_comment": "Case insensitive values for exact match, append 'contains:' for substring match",
+    "values": [
+      "floodtest"
+    ]
+  },
+  "hashtags": {
+    "_comment": "Case insensitive values for hashtag exact match, without the '#' symbol",
+    "values": [
+      "urbanriskmaptest"
+    ]
+  },
+  "instances": {
+    "_comment": {
+      "tag": "Gnip rule tag name",
+      "locations": "Corresponding to Gnip 'place' or 'bio_location' rules",
+      "boundingBoxes": "array of [west_long, south_lat, east_long, north_lat] - NOTE: Width and height of the bounding box must be less than 25mi"
+    },
+    "values": []
+  }
+}
