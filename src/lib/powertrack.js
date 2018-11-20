@@ -1,11 +1,7 @@
 // Core PowerTrack module
 import gnip from 'gnip';
 
-import {
-  _getlastTweetIDFromDatabase,
-  _checkAgainstLastTweetID,
-  _storeTweetID,
-} from './database';
+import {Database} from './database';
 import {TwitterModule} from './twitter';
 
 /**
@@ -22,6 +18,7 @@ export default class Powertrack {
   constructor(config, logger) {
     this.config = config;
     this.logger = logger;
+    this.database = new Database(this.config.pg);
   }
 
   /**
@@ -63,7 +60,7 @@ export default class Powertrack {
 
       // Attempt to reconnect
       logger.info( 'connectStream: Attempting to reconnect stream' );
-      _getlastTweetIDFromDatabase(() => {
+      this.database.getlastTweetIDFromDatabase(() => {
         stream.start();
       });
     };
@@ -114,9 +111,8 @@ export default class Powertrack {
     // event handler will be called
     stream.on('tweet', (tweetActivity) => {
       logger.debug(
-          // 'connectStream: stream.on(\'tweet\'): tweet = '
-          // + JSON.stringify(tweetActivity)
-          JSON.stringify(tweetActivity)
+          'connectStream: stream.on(\'tweet\'): tweet = '
+          + JSON.stringify(tweetActivity)
       );
 
       // Catch errors here, otherwise error in filter method is
@@ -125,12 +121,12 @@ export default class Powertrack {
         if (tweetActivity.actor) {
           // This looks like a tweet in Gnip activity format
           // First: compare tweet id against last stored tweet id
-          _checkAgainstLastTweetID(tweetActivity, () => {
-            logger.info('_checkLastTweetId: passed');
+          this.database.checkAgainstLastTweetID(tweetActivity, () => {
+            logger.verbose('_checkLastTweetId: passed');
 
             // Then: store latest tweet id
-            _storeTweetID(tweetActivity, (tweetActivity) => {
-              logger.info('_storeNewTweetId: stored');
+            this.database.storeTweetID(tweetActivity, (tweetActivity) => {
+              logger.verbose('_storeNewTweetId: stored');
 
               // Initiate twitter module
               const twitter = new TwitterModule(config.twitter, logger);
@@ -139,7 +135,12 @@ export default class Powertrack {
               twitter.sendReplyTweet(
                   tweetActivity,
                   'en',
-                  // need callback?
+                  () => {
+                    // TODO: should we store username + lastReplySent(timestamp)
+                    // in a new database table?
+                    // Can be used to prevent spamming same user every time
+                    // their tweet matches the Gnip rules
+                  }
               );
             });
           });
