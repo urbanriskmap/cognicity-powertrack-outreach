@@ -1,4 +1,5 @@
 import Twitter from 'twitter';
+import fs from 'fs';
 
 /**
  * @class TwitterModule
@@ -21,6 +22,12 @@ export class TwitterModule {
       access_token_key: this.config.access_token_key,
       access_token_secret: this.config.access_token_secret,
     });
+
+    // Read image file
+    // Use path relative to process.cwd()
+    if (this.config.media_enabled === 'true') {
+      this.media = fs.readFileSync('bin/deployment/assets/flood_image.png');
+    }
 
     // Configure messages
     this.messages = {
@@ -91,6 +98,22 @@ export class TwitterModule {
   }
 
   /**
+   * @param {object} params - status object with parameters
+   * @param {function} success Callback function called on success
+   */
+  formatAndSendReply(params, success) {
+    // Make a POST call to send a tweet to the user
+    this.client.post('statuses/update', params)
+        .then((tweet) => {
+          this.logger.info(this.messages.success(params, tweet));
+          if (success) success();
+        })
+        .catch((error) => {
+          this.logger.error(this.messages.error(params, error));
+        });
+  }
+
+  /**
    * Send reply Twitter message
    * @param {GnipTweetActivity} tweet
    * @param {string} lang 2-letter language code from deployment
@@ -131,21 +154,26 @@ export class TwitterModule {
         };
 
         if (this.config.send_enabled) {
-          this.logger.info('_sendReplyTweet: Sending message '
+          this.logger.info('_sendReplyTweet: Sending message with params: '
             + JSON.stringify(params) + ' to username: @' + username
           );
 
-          // Make a POST call to send a tweet to the user
-          this.client.post(
-              'statuses/update',
-              params)
-              .then((tweet) => {
-                this.logger.info(this.messages.success(params, tweet));
-                if (success) success();
-              })
-              .catch((error) => {
-                this.logger.error(this.messages.error(params, error));
-              });
+          if (this.config.media_enabled === 'true') {
+            // Upload media
+            this.client.post(
+                'media/upload',
+                {media: this.media},
+                (error, media, response) => {
+                  if (!error) params.media_ids = media.media_id_string;
+
+                  // Then send tweet
+                  this.formatAndSendReply(params, success);
+                }
+            );
+          } else {
+            // Send tweet without media
+            this.formatAndSendReply(params, success);
+          }
         } else {
           // TODO: Add code for tests
         }

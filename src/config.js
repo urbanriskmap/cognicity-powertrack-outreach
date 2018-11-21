@@ -127,7 +127,7 @@ export default {
     // - will mean ~10 minutes from first disconnection
     maxReconnectTimeout: 1000 * 60 * 5,
     // Backfill in minutes on reconnect to the stream
-    backfillMinutes: 5,
+    backfillMinutes: 0,
   },
 
   // Twitter app authentication details
@@ -158,7 +158,10 @@ export default {
     dialogue: messages,
 
     // Add a specified twitter media to replies
-    media_id: process.env.TWITTER_MEDIA_ID,
+    // NOTE: Including media (static image) prevents the 'Send private message'
+    // button from being displayed correctly - avoid
+    // TODO: Try adding the deep link to the media?
+    media_enabled: process.env.TWITTER_MEDIA_ENABLED,
     // Deep link to the twitter chatbot for the specified deployment
     bot_deep_link: process.env.TWITTER_DEEP_LINK,
   },

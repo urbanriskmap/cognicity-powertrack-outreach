@@ -21,6 +21,7 @@ if (dep === 'test' || dep === 'in' || dep === 'id') {
 gulp.task('default',
     gulp.parallel(
         'processRules',
-        'fetchMessages'
+        'fetchMessages',
+        'fetchAssets'
     )
 );

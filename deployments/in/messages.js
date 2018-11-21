@@ -2,7 +2,7 @@
 // enabled, or 123 characters if timestamps are disabled
 export default {
   en: {
-    redirect: 'Please use the link below to '
-    + 'report flooding in your area. Thanks!',
+    redirect: 'RiskMap\'s chatbot helps you share real-time information '
+    + 'in case of flooding. Click below to get started.',
   },
 };
