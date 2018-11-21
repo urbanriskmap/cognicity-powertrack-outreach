@@ -7,20 +7,28 @@ import Powertrack from './lib/powertrack';
 
 console.log(config.logger);
 
+let loggerTransports = [];
+if (config.logger.filename) {
+  loggerTransports = [
+    // - Write to all logs with level `info` and below to `combined.log`
+    new winston.transports.File({filename: 'error.log', level: 'error'}),
+    // - Write all logs error (and below) to `error.log`.
+    new winston.transports.File({filename: 'combined.log'}),
+  ];
+} else {
+  loggerTransports = [
+    new winston.transports.Console(),
+  ];
+}
+
+
 // Logger
 const logger = winston.createLogger({
   level: config.logger.level,
   format: winston.format.json(),
   maxsize: config.logger.maxFileSize,
   maxFiles: config.logger.maxFiles,
-  transports: [
-    //
-    // - Write to all logs with level `info` and below to `combined.log`
-    // - Write all logs error (and below) to `error.log`.
-    //
-    new winston.transports.File({filename: 'error.log', level: 'error'}),
-    new winston.transports.File({filename: 'combined.log'}),
-  ],
+  transports: loggerTransports,
 });
 
 //

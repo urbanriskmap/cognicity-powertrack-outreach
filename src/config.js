@@ -99,8 +99,9 @@ export default {
     // logs will be written to the application directory.
     logDirectory: process.env.LOG_DIR,
 
-    // base filename to use
-    filename: 'cognicity-reports',
+    // Base filename to use
+    // Leave env param empty to log to console
+    filename: process.env.LOG_BASE_FILENAME || null,
   },
 
   // Gnip Powertrack API
@@ -136,10 +137,6 @@ export default {
     consumer_secret: process.env.TWITTER_CONSUMER_SECRET,
     access_token_key: process.env.TWITTER_ACCESS_TOKEN_KEY,
     access_token_secret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-
-    // TODO: Twitter username (without @) authorised to verify reports
-    // via retweet functionality
-    usernameVerify: '',
 
     // Twitter usernames (without @, comma separated for multiples) which will
     // never be sent to in response to tweet processing
