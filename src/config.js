@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Local imports for deployment
 import rules from './deployment/rules';
 import messages from './deployment/messages';
 
-// TODO update doc
+// TODO: update doc
 /**
  * Configuration for cognicity-reports-powertrack
  * @namespace {object} config

@@ -1,6 +1,7 @@
 // Core PowerTrack module
 import gnip from 'gnip';
 
+// Local imports
 import Database from './database';
 import {TwitterModule} from './twitter';
 
@@ -22,7 +23,7 @@ export default class Powertrack {
   }
 
   /**
-   * TODO add jsdoc
+   * TODO: add jsdoc
    */
   start() {
     // Setup "global" variables
@@ -32,22 +33,22 @@ export default class Powertrack {
     let streamReconnectTimeout = _initialStreamReconnectTimeout;
     // Connect Gnip stream and setup event handlers
     let reconnectTimeoutHandle;
-    let disconnectionNotificationSent;
+    // let disconnectionNotificationSent;
     const config = this.config;
 
     /**
-     * TODO add jsdoc
+     * TODO: add jsdoc
      * Attempt to reconnect the socket.
      * If we fail, wait an increasing amount of time before we try again.
      */
     const reconnectSocket = () => {
       // Try and destroy the existing socket, if it existsconfirmReports
-      logger.warn( 'connectStream: Connection lost, destroying socket' );
+      logger.warn('connectStream: Connection lost, destroying socket');
       if ( stream._req ) stream._req.destroy();
 
       // If our timeout is above max threshold, cap it & send notification tweet
       if (streamReconnectTimeout >= config.gnip.maxReconnectTimeout) {
-        // TODO - logging
+        // TODO: logging
         logger.warn(
             'Cognicity Reports PowerTrack Gnip connection has been offline for '
             + config.gnip.maxReconnectTimeout + ' seconds');
@@ -65,7 +66,7 @@ export default class Powertrack {
       });
     };
 
-    // TODO We get called twice for disconnect, once from error once from end
+    // TODO:We get called twice for disconnect, once from error once from end
     // Is this normal? Can we only use one event? Or is it possible to get only
     // one of those handlers called under some error situations.
 
@@ -96,7 +97,10 @@ export default class Powertrack {
     stream.on('ready', () => {
       logger.info('connectStream: Stream ready!');
       streamReconnectTimeout = _initialStreamReconnectTimeout;
-      disconnectionNotificationSent = false;
+
+      // TODO: Use case?
+      // disconnectionNotificationSent = false;
+
       // Augment Gnip.Stream._req (Socket) object with a timeout handler.
       // We are accessing a private member here so updates to gnip could
       // break this, but gnip module does not expose the socket or
@@ -165,7 +169,7 @@ export default class Powertrack {
       reconnectStream();
     });
 
-    // TODO Do we need to catch the 'end' event?
+    // TODO: Do we need to catch the 'end' event?
     // Handle a socket 'end' event from the stream
     stream.on('end', () => {
       logger.error('connectStream: Stream ended');

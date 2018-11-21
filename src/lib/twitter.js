@@ -81,7 +81,9 @@ export class TwitterModule {
    * @param {GnipTweetActivity} tweet
    * @return {boolean}
    */
-  isTweetFromUs(tweet) { // TODO Check by sending tweet with screen_name
+  isTweetFromUs(tweet) {
+    // TODO: Use feature for filtering outreach tweets not directed to users
+    // Eg. usecase - when @riskmapindia tweets ahead of flood forecast
     // const screenName = tweet.user.screen_name;
     // return (screenName === this.config.screen_name);
     return false;

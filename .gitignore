@@ -6,3 +6,4 @@ node_modules/
 samples/
 src/deployment/
 tasks/index.js
+.nyc_output/

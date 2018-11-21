@@ -9,9 +9,16 @@
   "scripts": {
     "start": "export dep=test && npm run build && node bin/index.js",
     "build": "npm run process-dep && babel src -d bin",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --fix src",
+    "mocha": "nyc mocha --require @babel/register tests",
+    "test": "npm run lint && npm run mocha",
+    "coverage": "nyc report --reporter=text-lcov | coveralls",
     "process-dep": "babel tasks/**/*.js tasks/gulpfile.js -o tasks/index.js && gulp -f ./tasks --dep $dep"
+  },
+  "nyc": {
+    "exclude": [
+      "tests/**/*.js"
+    ]
   },
   "dependencies": {
     "dotenv": "^6.1.0",
@@ -24,6 +31,9 @@
     "@babel/cli": "^7.1.5",
     "@babel/core": "^7.1.6",
     "@babel/preset-env": "^7.1.6",
+    "@babel/register": "^7.0.0",
+    "babel-plugin-istanbul": "^5.1.0",
+    "coveralls": "^3.0.2",
     "eslint": "^5.9.0",
     "eslint-config-google": "^0.11.0",
     "gulp": "^4.0.0",
@@ -31,6 +41,10 @@
     "gulp-changed-in-place": "^2.3.0",
     "gulp-rename": "^1.4.0",
     "gulp-replace": "^1.0.0",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.1.0",
+    "sinon": "^7.1.1",
+    "unit.js": "^2.0.0"
   }
 }

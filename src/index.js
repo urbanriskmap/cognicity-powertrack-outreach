@@ -1,9 +1,9 @@
 import {Client} from 'pg';
-import Powertrack from './lib/powertrack';
 import winston from 'winston';
 
 // Local imports
 import config from './config';
+import Powertrack from './lib/powertrack';
 
 console.log(config.logger);
 
@@ -37,22 +37,23 @@ if (process.env.NODE_ENV !== 'production') {
 // If we exit immediately winston does not get a chance to write the
 // last log message. So we wait a short time before exiting.
 /**
- * TODO add jsdoc
+ * TODO: add jsdoc
  * @param {number} exitStatus
  */
-function exitWithStatus(exitStatus) {
+const exitWithStatus = (exitStatus) => {
   logger.info( 'Exiting with status ' + exitStatus );
-  setTimeout( function() {
+  setTimeout(() => {
     process.exit(exitStatus);
   }, 500 );
-}
+};
 
 logger.info('Application starting...');
 
 // Verify DB connection is up
-// TODO should this be a pool?
-const client = new Client(config.pg.conString);
-client.connect(function(err, client, done) {
+// TODO: should this be a pool?
+const client = new Client(config.pg.connection);
+
+client.connect((err, client, done) => {
   if (err) {
     logger.error('DB Connection error: ' + err);
     logger.error('Fatal error: Application shutting down');
