@@ -147,7 +147,7 @@ export default {
 
     // Twitter parameters
     // Enable sending of tweets?
-    send_enabled: true,
+    send_enabled: process.env.TWITTER_SEND_ENABLED,
     // URLs no longer count as part of tweet limits so this should be 0
     url_length: 0,
     // Append a timestamp to each sent tweet except response to
