@@ -45,10 +45,11 @@ export class TwitterModule {
    */
   isUsernameInBlacklist(username) {
     if (this.config.usernameReplyBlacklist) {
-      this.config.usernameReplyBlacklist.split(',')
-          .forEach((blacklistUsername) => {
-            if (username === blacklistUsername) return true;
-          });
+      const blacklist = this.config.usernameReplyBlacklist.split(',');
+
+      for (const blacklistUsername of blacklist) {
+        if (username === blacklistUsername) return true;
+      }
     }
 
     return false;
