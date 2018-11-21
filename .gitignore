@@ -1,9 +1,24 @@
+# dist
 bin/
+
+# app secrets
 .env
+
+# packages
 node_modules/
+
+# system files
 .DS_Store
+
+# logs
 *.log
+
+# Use samples folder to store Gnip twitter activity for dev
 samples/
+
+# gulp build-time outputs
 src/deployment/
 tasks/index.js
+
+# test reports
 .nyc_output/

@@ -1,7 +1,7 @@
 {
   "allowRetweets": false,
   "addressed": {
-    "_comment": "Usernames with '@' symbol",
+    "_comment": "Usernames with '@' symbol, tweets addressed to these usernames in conjunction with keywords and/or hashtags will be included",
     "values": [
       "@RisklabTest"
     ]
