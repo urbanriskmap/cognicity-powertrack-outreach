@@ -5,7 +5,4 @@ export default {
     redirect: 'Please use the link below to '
     + 'report flooding in your area. Thanks!',
   },
-  tm: {
-    redirect: '',
-  },
 };
