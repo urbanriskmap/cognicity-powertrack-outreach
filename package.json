@@ -14,7 +14,8 @@
     "mocha": "nyc mocha --require @babel/register tests",
     "test": "npm run lint && npm run mocha",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
-    "process-dep": "babel tasks/**/*.js tasks/gulpfile.js -o tasks/index.js && gulp -f ./tasks --dep $dep"
+    "process-dep": "babel tasks/**/*.js tasks/gulpfile.js -o tasks/index.js && gulp -f ./tasks --dep $dep",
+    "logs2json": "babel tasks/logs2json.js -o tasks/index.js && gulp -f ./tasks"
   },
   "nyc": {
     "exclude": [

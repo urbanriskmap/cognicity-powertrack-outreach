@@ -12,6 +12,7 @@ node_modules/
 
 # logs
 *.log
+temp/
 
 # Use samples folder to store Gnip twitter activity for dev
 samples/
